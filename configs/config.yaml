@@ -1,11 +1,12 @@
 # Model arguments
-model_name_or_path: alignment-handbook/zephyr-7b-sft-full
-model_revision: ac6e600eefcce74f5e8bae1035d4f66019e93190
+model_name_or_path: gpt2-xl #alignment-handbook/zephyr-7b-sft-full
+model_revision: main #ac6e600eefcce74f5e8bae1035d4f66019e93190
 
 # Data training arguments
 dataset_mixer:
   #HuggingFaceH4/ultrafeedback_binarized: 1.0
-  UCLA-AGI/SPIN_iter0: 1.0
+  # UCLA-AGI/SPIN_iter0: 1.0
+  test_dataset_output/weighted-SPIN_iter0: 1.0
 dataset_splits:
 - train
 - test
@@ -17,7 +18,7 @@ beta: 0.1
 do_eval: false
 evaluation_strategy: "no"
 eval_steps: 100
-gradient_accumulation_steps: 1
+gradient_accumulation_steps: 4
 gradient_checkpointing: true
 hub_model_id: zephyr-7b-spin
 learning_rate: 5.0e-7
@@ -29,7 +30,7 @@ max_prompt_length: 512
 num_train_epochs: 3
 optim: rmsprop
 output_dir: outputs
-per_device_train_batch_size: 8
+per_device_train_batch_size: 4
 per_device_eval_batch_size: 4
 push_to_hub: false
 save_strategy: "epoch"

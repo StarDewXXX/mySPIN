@@ -33,7 +33,7 @@ def apply_chat_template(
         # Use re.escape to escape any special characters in the pattern
         return re.sub(f"^{re.escape(pattern)}", "", s)
 
-    if all(k in example.keys() for k in ("real", "generated")):
+    if all(k in example.keys() for k in ("real", "generated", "weight")):
         # Compared to reward modeling, we filter out the prompt, so the text is everything after the last assistant token
         prompt_messages = [[msg for msg in example["real"] if msg["role"] == "user"][0]]
         # Insert system message

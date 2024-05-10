@@ -175,7 +175,7 @@ class DataCollatorWithPadding:
         # first, pad everything to the same length
         padded_batch = {}
         for k in batch[0].keys():
-            if k.endswith("_input_ids") or k.endswith("_attention_mask") or k.endswith("_labels"):
+            if k.endswith("_input_ids") or k.endswith("_attention_mask") or k.endswith("_labels") or k.endswith("weight"):
                 if self.is_encoder_decoder:
                     to_pad = [torch.LongTensor(ex[k]) for ex in batch]
 
@@ -200,6 +200,9 @@ class DataCollatorWithPadding:
                         padding_value = self.label_pad_token_id
                     elif k.endswith("_attention_mask"):
                         padding_value = self.padding_value
+                    elif k.endswith("weight")：
+                        pass
+
                     else:
                         raise ValueError(f"Unexpected key in batch '{k}'")
 
@@ -219,8 +222,10 @@ class DataCollatorWithPadding:
             prompt = feature["prompt"]
             chosen = feature["real"]
             rejected = feature["generated"]
+            weight = feature['weight']
 
             batch_element = self.tokenize_batch_element(prompt, chosen, rejected)
+            batch_element['weight'] = weight
             tokenized_batch.append(batch_element)
 
         # return collated batch
