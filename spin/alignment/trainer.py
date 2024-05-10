@@ -446,7 +446,7 @@ class MySPINTrainer(Trainer):
 
         logits = pi_logratios - ref_logratios
 
-
+        print("logits shape:",logits.shape)
         if self.loss_type == "sigmoid":
             losses = -F.logsigmoid(self.beta * logits) * weights
         elif self.loss_type == "hinge":
@@ -618,6 +618,7 @@ class MySPINTrainer(Trainer):
                 "compute_loss is only implemented for SPINDataCollatorWithPadding, and you passed a datacollator that is different than "
                 "SPINDataCollatorWithPadding - you might see unexpected behavior. Alternatively, you can implement your own prediction_step method if you are using a custom data collator"
             )
+        # print("weights in f(compute_loss)",inputs['weight'])
         loss, metrics = self.get_batch_metrics(model, inputs, train_eval="train")
 
         # force log the metrics

@@ -22,7 +22,7 @@ from alignment import (
     is_adapter_model,
 )
 from peft import PeftConfig, PeftModel
-from alignment import SPINTrainer
+from alignment import SPINTrainer, MySPINTrainer
 from torch.utils.data import Subset
 import re
 
@@ -53,7 +53,7 @@ def apply_chat_template(
         example["text_generated"] = _strip_prefix(example["text_generated"], assistant_prefix)
     else:
         raise ValueError(
-            f"Require `[real, generated]` keys but found {list(example.keys())}"
+            f"Require `[real, generated, weight]` keys but found {list(example.keys())}"
             )
     return example
 
@@ -97,6 +97,7 @@ def main():
         f"Training on the following splits: {[split + ' : ' + str(dset.num_rows) for split, dset in raw_datasets.items()]}"
     )
     column_names = list(raw_datasets["train"].features)
+    print("column_names:",column_names)
 
     #####################################
     # Load tokenizer and process datasets
@@ -111,16 +112,18 @@ def main():
         apply_chat_template,
         fn_kwargs={"tokenizer": tokenizer, "task": "spin"},
         num_proc=data_args.preprocessing_num_workers,
-        remove_columns=column_names,
+        remove_columns=[name for name in column_names if name != "weight"],
         desc="Formatting comparisons with prompt template",
     )
-
+    print("pos 1:",raw_datasets['train'][0])
+    print("-"*40)
     # Replace column names with what TRL needs, text_real -> real and text_generated -> generated
     for split in ["train", "test"]:
         raw_datasets[split] = raw_datasets[split].rename_columns(
             {"text_prompt": "prompt", "text_real": "real", "text_generated": "generated"}
         )
-
+    print("pos 2:",raw_datasets['train'][0])
+    print("-"*40)
     torch_dtype = (
         model_args.torch_dtype if model_args.torch_dtype in ["auto", None] else getattr(torch, model_args.torch_dtype)
     )
@@ -148,7 +151,7 @@ def main():
     #########################
     # Instantiate spin trainer
     #########################
-    spin_trainer = SPINTrainer(
+    spin_trainer = MySPINTrainer(
         model,
         ref_model,
         model_init_kwargs=model_kwargs,

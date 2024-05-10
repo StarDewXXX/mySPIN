@@ -106,12 +106,27 @@ def mix_datasets(dataset_mixer: dict, splits: Optional[List[str]] = None, shuffl
     for ds, frac in dataset_mixer.items():
         fracs.append(frac)
         for split in splits:
-            try:
-                # Try first if dataset on a Hub repo
-                dataset = load_dataset(ds, split=split)
-            except DatasetGenerationError:
-                # If not, check local dataset
+            print("ds:",ds)
+            if "weighted" in ds:
+                print("load_from_disk")
+                print("path:",os.path.join(ds, split))
                 dataset = load_from_disk(os.path.join(ds, split))
+                print(dataset[0])
+                print("size:",len(dataset))
+            else:
+                try:
+                    # Try first if dataset on a Hub repo
+                    print("load_dataset")
+                    dataset = load_dataset(ds, split=split)
+                    print(dataset[0])
+                    print("size:",len(dataset))
+                except DatasetGenerationError:
+                    # If not, check local dataset
+                    print("load_from_disk")
+                    print("path:",os.path.join(ds, split))
+                    dataset = load_from_disk(os.path.join(ds, split))
+                    print(dataset[0])
+                    print("size:",len(dataset))
 
             if "train" in split:
                 raw_train_datasets.append(dataset)

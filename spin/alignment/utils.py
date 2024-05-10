@@ -190,19 +190,23 @@ class DataCollatorWithPadding:
                     padded_batch[k] = pad_sequence(to_pad, batch_first=True, padding_value=padding_value)
                 else:
                     # adapted from https://stackoverflow.com/questions/73256206
+                    if "weight" in k:
+                        padded_batch[k] = torch.tensor([ex[k] for ex  in batch])
+                        continue
+
                     if "prompt" in k:
                         to_pad = [torch.LongTensor(ex[k][::-1]) for ex in batch]
                     else:
                         to_pad = [torch.LongTensor(ex[k]) for ex in batch]
+
                     if k.endswith("_input_ids"):
                         padding_value = self.tokenizer.pad_token_id
                     elif k.endswith("_labels"):
                         padding_value = self.label_pad_token_id
                     elif k.endswith("_attention_mask"):
                         padding_value = self.padding_value
-                    elif k.endswith("weight")：
+                    elif k.endswith("weight"):
                         pass
-
                     else:
                         raise ValueError(f"Unexpected key in batch '{k}'")
 
@@ -212,7 +216,7 @@ class DataCollatorWithPadding:
                         padded_batch[k] = padded_batch[k].flip(dims=[1])
             else:
                 padded_batch[k] = [ex[k] for ex in batch]
-
+        # print("padded_batch",padded_batch)
         return padded_batch
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -226,7 +230,9 @@ class DataCollatorWithPadding:
 
             batch_element = self.tokenize_batch_element(prompt, chosen, rejected)
             batch_element['weight'] = weight
+            # print("weight in f(__call__):",weight)
             tokenized_batch.append(batch_element)
 
         # return collated batch
+        # print("tokenized_batch:",tokenized_batch)
         return self.collate(tokenized_batch)
